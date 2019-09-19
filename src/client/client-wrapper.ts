@@ -1,7 +1,9 @@
+import { SpfRecord } from './../models/spf-record';
 import * as grpc from 'grpc';
 import * as needle from 'needle';
 import { Field } from '../core/base-step';
 import { FieldDefinition } from '../proto/cog_pb';
+import { resolve } from 'path';
 
 /**
  * This is a wrapper class around the API client for your Cog. An instance of
@@ -18,11 +20,7 @@ export class ClientWrapper {
    *
    * If your Cog does not require authentication, set this to an empty array.
    */
-  public static expectedAuthFields: Field[] = [{
-    field: 'userAgent',
-    type: FieldDefinition.Type.STRING,
-    description: 'User Agent String',
-  }];
+  public static expectedAuthFields: Field[] = [];
 
   /**
    * Private instance of the wrapped API client. You will almost certainly want
@@ -53,14 +51,31 @@ export class ClientWrapper {
     this.client.defaults({ user_agent: uaString });
   }
 
-  /**
-   * An example of how to expose the underlying API client to your steps. Any
-   * public methods exposed on this class can be invoked in your steps'
-   * executeStep methods like so: this.client.getUserByEmail()
-   */
-  public async getUserByEmail(email: string): Promise<needle.NeedleResponse> {
-    // Naturally, the code here will depend on the actual API client you use.
-    return this.client(`https://jsonplaceholder.typicode.com/users?email=${email}`);
-  }
+  public async findSpfRecordByDomain(domain: string): Promise<SpfRecord[]> {
+    const dns = require('dns');
+    const spfParse = require('spf-parse');
 
+    return new Promise((resolve, reject) => {
+      try {
+        dns.resolveTxt(domain, (err, results) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+
+          const result: SpfRecord[] = [];
+
+          results.forEach((record) => {
+            if (record[0].includes('spf')) {
+              result.push(spfParse(record[0]));
+            }
+          });
+
+          resolve(result);
+        });
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
 }
