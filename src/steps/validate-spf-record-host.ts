@@ -1,5 +1,5 @@
-import { Mechanism } from '../models/Mechanism';
 import { SpfRecord } from './../models/spf-record';
+import { Mechanism } from '../models/mechanism';
 /*tslint:disable:no-else-after-return*/
 
 import { BaseStep, Field, StepInterface } from '../core/base-step';
