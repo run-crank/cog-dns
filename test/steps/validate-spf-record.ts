@@ -44,23 +44,11 @@ describe('ValidateSpfRecordStep', () => {
   it('should respond with pass if API client resolves expected data', async () => {
     // Stub a response that matches expectations.
     const domainInput: string = 'sampleDomain.com';
+    const expectedResponseMessage: string = 'SPF record for %s is valid: %s';
     const expectedSpfRecord: any = [
-      {
-        mechanisms: [
-          {
-            prefix: 'v',
-            type: 'version',
-            description: 'description',
-            value: 'spf1',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'all',
-            description: 'description',
-          },
-        ],
-      },
+      [
+        'v=spf1 include:_spf.google.com ~all',
+      ],
     ];
 
     clientWrapperStub.findSpfRecordByDomain.resolves(expectedSpfRecord);
@@ -73,59 +61,20 @@ describe('ValidateSpfRecordStep', () => {
 
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(clientWrapperStub.findSpfRecordByDomain).to.have.been.calledWith(domainInput);
+    expect(response.getMessageFormat()).to.equal(expectedResponseMessage);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
   });
 
   it('should respond with fail if API client returns with multiple Spf records', async () => {
     // Stub a response that matches expectations.
     const domainInput: string = 'sampleDomain.com';
-    const expectedSpfRecord: any = [
-      {
-        mechanisms: [
-          {
-            prefix: 'v',
-            type: 'version',
-            description: 'description',
-            value: 'spf1',
-          },
-          {
-            prefix: '+',
-            prefixdesc: 'Pass',
-            type: 'include',
-            description: 'description',
-            value: 'sampleHost.com',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'all',
-            description: 'description',
-          },
-        ],
-      },
-      {
-        mechanisms: [
-          {
-            prefix: 'v',
-            type: 'version',
-            description: 'description',
-            value: 'spf1',
-          },
-          {
-            prefix: '+',
-            prefixdesc: 'Pass',
-            type: 'include',
-            description: 'description',
-            value: 'sampleHost.com',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'all',
-            description: 'description',
-          },
-        ],
-      },
+    const expectedSpfRecord: any =  [
+      [
+        'v=spf1 include:_spf.google.com ~all',
+      ],
+      [
+        'v=spf1 include:_spf.google.com ~all',
+      ],
     ];
 
     clientWrapperStub.findSpfRecordByDomain.resolves(expectedSpfRecord);
@@ -138,92 +87,18 @@ describe('ValidateSpfRecordStep', () => {
 
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(clientWrapperStub.findSpfRecordByDomain).to.have.been.calledWith(domainInput);
-    expect(response.getMessageFormat()).to.equal('Domain %s does not have exactly one SPF record, it has %s SPF records');
+    expect(response.getMessageFormat()).to.equal('There should only be 1 SPF record for %s, but there were actually %s');
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
   });
 
   it('should respond with fail if API client returns with a single Spf record has more than 10 mechanisms of specific types', async () => {
     // Stub a response that matches expectations.
     const domainInput: string = 'sampleDomain.com';
-    const expectedResponseMessage: string = 'Domain %s SPF record has more than ten lookups, it has %s lookups';
+    const expectedResponseMessage: string = 'There should only be no more than 10 SPF lookups for %s, but there were actually %s';
     const expectedSpfRecord: any = [
-      {
-        mechanisms: [
-          {
-            prefix: 'v',
-            type: 'version',
-            description: 'description',
-            value: 'spf1',
-          },
-          {
-            prefix: '+',
-            prefixdesc: 'Pass',
-            type: 'include',
-            description: 'description',
-            value: 'sampleHost.com',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'include',
-            description: 'description',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'include',
-            description: 'description',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'include',
-            description: 'description',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'include',
-            description: 'description',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'include',
-            description: 'description',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'include',
-            description: 'description',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'include',
-            description: 'description',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'include',
-            description: 'description',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'include',
-            description: 'description',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'include',
-            description: 'description',
-          },
-        ],
-      },
+      [
+        'v=spf1 include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
+      ],
     ];
 
     clientWrapperStub.findSpfRecordByDomain.resolves(expectedSpfRecord);
@@ -243,31 +118,49 @@ describe('ValidateSpfRecordStep', () => {
   it('should respond with fail if API client returns with a single Spf record has more than 255 characters', async () => {
     // Stub a response that matches expectations.
     const domainInput: string = 'sampleDomain.com';
-    const expectedResponseMessage: string = 'Domain %s SPF record has more than 255 characters. It has %s characters';
+    const expectedResponseMessage: string = 'SPF record for %s includes a string over 255 characters. Consider breaking this up into multiple strings: %s';
     const expectedSpfRecord: any = [
-      {
-        mechanisms: [
-          {
-            prefix: 'v',
-            type: 'version',
-            description: 'description',
-            value: 'spf1',
-          },
-          {
-            prefix: '+',
-            prefixdesc: 'Pass',
-            type: 'include',
-            description: 'description',
-            value: 'sampleHost.com',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'all gdfg fhgdhdfh df',
-            description: 'description',
-          },
-        ],
-      },
+      [
+        'v=spf1 ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
+        'v=spf1  ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
+        'v=spf1  ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
+        'v=spf1  ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
+        'v=spf1  ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
+        'v=spf1  ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
+        'v=spf1  ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
+        'v=spf1  ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
+        'v=spf1  ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
+      ],
+    ];
+
+    clientWrapperStub.findSpfRecordByDomain.resolves(expectedSpfRecord);
+
+    // Set step data corresponding to expectations
+    const expectations: any = {
+      domain: domainInput,
+    };
+    protoStep.setData(Struct.fromJavaScript(expectations));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(clientWrapperStub.findSpfRecordByDomain).to.have.been.calledWith(domainInput);
+    expect(response.getMessageFormat()).to.equal(expectedResponseMessage);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
+  });
+
+  it('should respond with fail if API client returns with a single Spf record has more than 512 bytes', async () => {
+    // Stub a response that matches expectations.
+    const domainInput: string = 'sampleDomain.com';
+    const expectedResponseMessage: string = "SPF records shouldn't exceed 512 bytes, but %s's record was %s bytes";
+    const expectedSpfRecord: any = [
+      [
+        'v=spf1 include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
+        'v=spf1 include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
+        'v=spf1 include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
+        'v=spf1 include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
+        'v=spf1 include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
+        'v=spf1 include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
+        'v=spf1 include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
+      ],
     ];
 
     clientWrapperStub.findSpfRecordByDomain.resolves(expectedSpfRecord);
@@ -288,32 +181,13 @@ describe('ValidateSpfRecordStep', () => {
   it('should respond with fail if API client returns with a single Spf record has syntax error', async () => {
     // Stub a response that matches expectations.
     const domainInput: string = 'sampleDomain.com';
-    const expectedResponseMessage: string = 'Domain %s SPF record has a syntax error';
+    const expectedResponseMessage: string = "Found syntax error(s) in %s's SPF record: %s";
+    // record with typo (include => iclude)
     const expectedSpfRecord: any = [
-      {
-        mechanisms: [
-          {
-            prefix: 'v',
-            type: 'version',
-            description: 'description',
-            value: 'spf1',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'all',
-            description: 'description',
-          },
-        ],
-        messages: [
-          {
-            message: 'anyMessage',
-            type: 'error',
-          },
-        ],
-      },
+      [
+        'v=spf1 a mx iclude:_spf.elasticemail.com ~all',
+      ],
     ];
-
     clientWrapperStub.findSpfRecordByDomain.resolves(expectedSpfRecord);
 
     // Set step data corresponding to expectations
@@ -331,24 +205,11 @@ describe('ValidateSpfRecordStep', () => {
   it('should respond with fail if API client returns with a single Spf record last record not being ~all', async () => {
     // Stub a response that matches expectations.
     const domainInput: string = 'sampleDomain.com';
-    const expectedResponseMessage: string = "Domain %s SPF record's last entry is not ~all. It has %s";
+    const expectedResponseMessage: string = 'The last entry in an SPF record should be ~all, but it was actually %s';
     const expectedSpfRecord: any = [
-      {
-        mechanisms: [
-          {
-            prefix: 'v',
-            type: 'version',
-            description: 'description',
-            value: 'spf1',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail~',
-            type: 'notAll',
-            description: 'adsfafa',
-          },
-        ],
-      },
+      [
+        'v=spf1 a mx include:_spf.elasticemail.com -all',
+      ],
     ];
 
     clientWrapperStub.findSpfRecordByDomain.resolves(expectedSpfRecord);

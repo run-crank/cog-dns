@@ -50,30 +50,11 @@ describe('ValidateSpfRecordHostStep', () => {
     // Stub a response that matches expectations.
     const domainInput: string = 'sampleDomain.com';
     const expectedHost: string = 'sampleHost.com';
+    const expectedResponseMessage: string = 'SPF record for %s includes %s, as expected';
     const spfRecord: any = [
-      {
-        mechanisms: [
-          {
-            prefix: 'v',
-            type: 'version',
-            description: 'The SPF record version',
-            value: 'spf1',
-          },
-          {
-            prefix: '+',
-            prefixdesc: 'Pass',
-            type: 'include',
-            description: 'The specified domain is searched for an \'allow\'',
-            value: expectedHost,
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'all',
-            description: 'Always matches. It goes at the end of your record',
-          },
-        ],
-      },
+      [
+        `v=spf1 include:${expectedHost} ~all`,
+      ],
     ];
 
     clientWrapperStub.findSpfRecordByDomain.resolves(spfRecord);
@@ -87,6 +68,7 @@ describe('ValidateSpfRecordHostStep', () => {
 
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(clientWrapperStub.findSpfRecordByDomain).to.have.been.calledWith(domainInput);
+    expect(response.getMessageFormat()).to.equal(expectedResponseMessage);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
   });
 
@@ -95,48 +77,18 @@ describe('ValidateSpfRecordHostStep', () => {
     const domainInput: string = 'sampleDomain.com';
     const expectedHost: string = 'sampleHost.com';
     const spfRecord: any = [
-      {
-        mechanisms: [
-          {
-            prefix: 'v',
-            type: 'version',
-            description: 'The SPF record version',
-            value: 'spf1',
-          },
-          {
-            prefix: '+',
-            prefixdesc: 'Pass',
-            type: 'include',
-            description: 'The specified domain is searched for an \'allow\'',
-            value: expectedHost,
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'all',
-            description: 'Always matches. It goes at the end of your record',
-          },
-        ],
-      },
-      {
-        mechanism: [
-          {
-            prefix: 'v',
-            type: 'version',
-            description: 'The SPF record version',
-            value: 'spf1',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'all',
-            description: 'Always matches. It goes at the end of your record',
-          },
-        ],
-      },
+      [
+        `v=spf1 a mx include:${expectedHost} ~all`,
+      ],
+      [
+        `v=spf1 a mx include:${expectedHost} ~all`,
+      ],
+      [
+        `v=spf1 a mx include:${expectedHost} ~all`,
+      ],
     ];
 
-    const expectedResponseMessage: string = 'Domain %s does not have exactly one SPF record, it has %s SPF records';
+    const expectedResponseMessage: string = "Can't check that %s's SPF includes %s because it's invalid: there should only be 1 SPF record, but there were actually %s";
     clientWrapperStub.findSpfRecordByDomain.resolves(spfRecord);
 
     // Set step data corresponding to expectations
@@ -158,32 +110,12 @@ describe('ValidateSpfRecordHostStep', () => {
     const domainInput: string = 'sampleDomain.com';
     const expectedHost: string = 'sampleHost.com';
     const spfRecord: any = [
-      {
-        mechanisms: [
-          {
-            prefix: 'v',
-            type: 'version',
-            description: 'The SPF record version',
-            value: 'spf1',
-          },
-          {
-            prefix: '+',
-            prefixdesc: 'Pass',
-            type: 'include',
-            description: 'The specified domain is searched for an \'allow\'',
-            value: 'unexpectedHost',
-          },
-          {
-            prefix: '~',
-            prefixdesc: 'SoftFail',
-            type: 'all',
-            description: 'Always matches. It goes at the end of your record',
-          },
-        ],
-      },
+      [
+        'v=spf1 include:unexpectedHost.com ~all',
+      ],
     ];
 
-    const expectedResponseMessage: string = '%s is invalid, does not include host %s,\n %s';
+    const expectedResponseMessage: string = "SPF record for %s should include %s, but it doesn't. It was actually: %s";
     clientWrapperStub.findSpfRecordByDomain.resolves(spfRecord);
 
     // Set step data corresponding to expectations
@@ -195,8 +127,8 @@ describe('ValidateSpfRecordHostStep', () => {
 
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(clientWrapperStub.findSpfRecordByDomain).to.have.been.calledWith(domainInput);
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
     expect(response.getMessageFormat()).to.equal(expectedResponseMessage);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
   });
 
   it('should respond with error if API client throws an exception', async () => {

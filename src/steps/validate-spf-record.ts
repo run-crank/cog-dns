@@ -19,12 +19,19 @@ export class ValidateSpfRecord extends BaseStep implements StepInterface {
 
   async executeStep(step: Step): Promise<RunStepResponse> {
     const sizeOf = require('object-sizeof');
+    const spfParse = require('spf-parse');
     const stepData: any = step.getData().toJavaScript();
     const domain: string = stepData.domain;
-    let records: SpfRecord[];
+    let records: any[];
+    const parsedRecords: SpfRecord[] = [];
 
     try {
       records = await this.client.findSpfRecordByDomain(domain);
+      records.forEach((spf: any) => {
+        spf.forEach((record) => {
+          parsedRecords.push(spfParse(record));
+        });
+      });
     } catch (e) {
       return this.error('There was a problem checking the domain: %s', [e.toString()]);
     }
@@ -32,37 +39,40 @@ export class ValidateSpfRecord extends BaseStep implements StepInterface {
     if (records.length !== 1) {
       // If record has more than 1 record, return a fail.
       // tslint:disable-next-line:max-line-length
-      return this.fail('Domain %s does not have exactly one SPF record, it has %s SPF records', [domain, records.length.toString()]);
+      return this.fail('There should only be 1 SPF record for %s, but there were actually %s', [domain, records.length.toString()]);
     // tslint:disable-next-line:max-line-length
-    } else if (records[0].mechanisms.filter((mechanism: Mechanism) => mechanism.type === 'include' || mechanism.type === 'a' || mechanism.type === 'mx' || mechanism.type === 'ptr' || mechanism.type === 'exists').length > 10) {
+    } else if (parsedRecords[0].mechanisms.filter((mechanism: Mechanism) => mechanism.type === 'include' || mechanism.type === 'a' || mechanism.type === 'mx' || mechanism.type === 'ptr' || mechanism.type === 'exists').length > 10) {
       // If record has more than 10 lookups, return a fail.
       // tslint:disable-next-line:max-line-length
-      const mechanismLength: string = records[0].mechanisms.filter((mechanism: Mechanism) => mechanism.type === 'include' || mechanism.type === 'a' || mechanism.type === 'mx' || mechanism.type === 'ptr' || mechanism.type === 'exists').length.toString();
+      const mechanismLength: string = parsedRecords[0].mechanisms.filter((mechanism: Mechanism) => mechanism.type === 'include' || mechanism.type === 'a' || mechanism.type === 'mx' || mechanism.type === 'ptr' || mechanism.type === 'exists').length.toString();
       // tslint:disable-next-line:max-line-length
-      return this.fail('Domain %s SPF record has more than ten lookups, it has %s lookups', [domain, mechanismLength]);
-    } else if (JSON.stringify(records[0]).length > 255) {
+      return this.fail('There should only be no more than 10 SPF lookups for %s, but there were actually %s', [domain, mechanismLength]);
+    } else if (records[0].find((record: any) => record.toString().length > 255)) {
       // If record has more than 255 characters, return a fail.
+      const invalidStringTxt = records.find((record: any) => record.toString().length > 255);
       // tslint:disable-next-line:max-line-length
-      return this.fail('Domain %s SPF record has more than 255 characters. It has %s characters', [domain, JSON.stringify(records[0]).length.toString()]);
+      return this.fail('SPF record for %s includes a string over 255 characters. Consider breaking this up into multiple strings: %s', [domain, invalidStringTxt]);
     } else if (sizeOf(records[0]) > 512) {
       // If record has more than 512 bytes, return a fail.
       // tslint:disable-next-line:max-line-length
-      return this.fail('Domain %s SPF record has more than 512 bytes. It has %s bytes', [domain, sizeOf(JSON.stringify(records[0]))]);
+      return this.fail("SPF records shouldn't exceed 512 bytes, but %s's record was %s bytes", [domain, sizeOf(records[0])]);
     // tslint:disable-next-line:max-line-length
-    } else if (records[0].messages != null && records[0].messages.filter((message: Message) => message.type === 'error').length > 0) {
+    } else if (parsedRecords[0].messages != null && parsedRecords[0].messages.filter((message: Message) => message.type === 'error').length > 0) {
       // If record has a syntax error, return a fail.
       // tslint:disable-next-line:max-line-length
-      return this.fail('Domain %s SPF record has a syntax error', [domain]);
-    } else if (records[0].mechanisms[records[0].mechanisms.length - 1].prefix !== '~'
-      || records[0].mechanisms[records[0].mechanisms.length - 1].type !== 'all') {
+      const errors = parsedRecords[0].messages.filter((message: Message) => message.type === 'error');
+      // tslint:disable-next-line:max-line-length
+      return this.fail("Found syntax error(s) in %s's SPF record: %s", [domain, errors.map(e => e.message).join('\n')]);
+    } else if (parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1].prefix !== '~'
+      || parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1].type !== 'all') {
       // If record's last entry is not ~all, return a fail.
       // tslint:disable-next-line:max-line-length
-      const lastEntry: Mechanism = records[0].mechanisms[records[0].mechanisms.length - 1];
+      const lastEntry: Mechanism = parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1];
       // tslint:disable-next-line:max-line-length
-      return this.fail("Domain %s SPF record's last entry is not ~all. It has %s", [domain, lastEntry.prefix + lastEntry.type]);
+      return this.fail('The last entry in an SPF record should be ~all, but it was actually %s', [lastEntry.prefix + lastEntry.type]);
     } else {
       // If record passes all criteria, return a pass.
-      return this.pass('%s is valid', [domain]);
+      return this.pass('SPF record for %s is valid: %s', [domain, records[0].join('')]);
     }
   }
 

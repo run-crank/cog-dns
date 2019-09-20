@@ -21,13 +21,20 @@ export class ValidateSpfRecordHost extends BaseStep implements StepInterface {
   }];
 
   async executeStep(step: Step): Promise<RunStepResponse> {
+    const spfParse = require('spf-parse');
     const stepData: any = step.getData().toJavaScript();
     const domain: string = stepData.domain;
     const expectedHost: string = stepData.host;
-    let records: SpfRecord[];
+    let records: any;
+    const parsedRecords: SpfRecord[] = [];
 
     try {
       records = await this.client.findSpfRecordByDomain(domain);
+      records.forEach((spf: any) => {
+        spf.forEach((record) => {
+          parsedRecords.push(spfParse(record));
+        });
+      });
     } catch (e) {
       return this.error('There was a problem checking the domain: %s', [e.toString()]);
     }
@@ -35,14 +42,16 @@ export class ValidateSpfRecordHost extends BaseStep implements StepInterface {
     if (records.length !== 1) {
       // If record has more than 1 record, return a fail.
       // tslint:disable-next-line:max-line-length
-      return this.error('Domain %s does not have exactly one SPF record, it has %s SPF records', [domain, records.length.toString()]);
+      return this.error("Can't check that %s's SPF includes %s because it's invalid: there should only be 1 SPF record, but there were actually %s", [domain, expectedHost, parsedRecords.length.toString()]);
     // tslint:disable-next-line:max-line-length
-    } else if (records[0].mechanisms.find((lookUp: Mechanism) => lookUp.prefix === '+' && lookUp.type === 'include' && lookUp.value === expectedHost)) {
+    } else if (parsedRecords[0].mechanisms.find((mechanism: Mechanism) => mechanism.prefix === '+' && mechanism.type === 'include' && mechanism.value === expectedHost)) {
       // If record's last entry does not have expected host name, return a fail.
-      return this.pass('Domain %s includes host %s, as expected', [domain, expectedHost]);
+      return this.pass('SPF record for %s includes %s, as expected', [domain, expectedHost]);
     } else {
       // tslint:disable-next-line:max-line-length
-      return this.fail('%s is invalid, does not include host %s,\n %s', [domain, expectedHost, JSON.stringify(records[0])]);
+      const actualHost = parsedRecords[0].mechanisms.find((mechanism: Mechanism) => mechanism.prefix === '+' && mechanism.type === 'include').value;
+      // tslint:disable-next-line:max-line-length
+      return this.fail("SPF record for %s should include %s, but it doesn't. It was actually: %s", [domain, expectedHost, actualHost]);
     }
   }
 
