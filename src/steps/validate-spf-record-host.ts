@@ -47,9 +47,7 @@ export class ValidateSpfRecordHost extends BaseStep implements StepInterface {
       return this.pass('SPF record for %s includes %s, as expected', [domain, expectedHost]);
     } else {
       // tslint:disable-next-line:max-line-length
-      const actualHost = parsedRecords[0].mechanisms.find((mechanism: Mechanism) => mechanism.prefix === '+' && mechanism.type === 'include').value;
-      // tslint:disable-next-line:max-line-length
-      return this.fail("SPF record for %s should include %s, but it doesn't. It was actually: %s", [domain, expectedHost, actualHost]);
+      return this.fail("SPF record for %s should include %s, but it doesn't. It was actually: %s", [domain, expectedHost, records[0].join('')]);
     }
   }
 

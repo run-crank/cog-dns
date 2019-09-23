@@ -49,10 +49,10 @@ export class ValidateSpfRecord extends BaseStep implements StepInterface {
       const invalidStringTxt = records.find((record: any) => record.toString().length > 255);
       // tslint:disable-next-line:max-line-length
       return this.fail('SPF record for %s includes a string over 255 characters. Consider breaking this up into multiple strings: %s', [domain, invalidStringTxt]);
-    } else if (records[0].toString().length > 512) {
+    } else if (records[0].join('').length > 512) {
       // If record has more than 512 bytes, return a fail.
       // tslint:disable-next-line:max-line-length
-      return this.fail("SPF records shouldn't exceed 512 bytes, but %s's record was %s bytes", [domain, records[0].toString().length]);
+      return this.fail("SPF records shouldn't exceed 512 bytes, but %s's record was %s bytes", [domain, records[0].join('').length]);
     // tslint:disable-next-line:max-line-length
     } else if (parsedRecords[0].messages != null && parsedRecords[0].messages.filter((message: Message) => message.type === 'error').length > 0) {
       // If record has a syntax error, return a fail.
