@@ -31,9 +31,7 @@ export class ValidateSpfRecordHost extends BaseStep implements StepInterface {
     try {
       records = await this.client.findSpfRecordByDomain(domain);
       records.forEach((spf: any) => {
-        spf.forEach((record) => {
-          parsedRecords.push(spfParse(record));
-        });
+        parsedRecords.push(spfParse(spf.join('')));
       });
     } catch (e) {
       return this.error('There was a problem checking the domain: %s', [e.toString()]);

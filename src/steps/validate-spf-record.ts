@@ -28,9 +28,7 @@ export class ValidateSpfRecord extends BaseStep implements StepInterface {
     try {
       records = await this.client.findSpfRecordByDomain(domain);
       records.forEach((spf: any) => {
-        spf.forEach((record) => {
-          parsedRecords.push(spfParse(record));
-        });
+        parsedRecords.push(spfParse(spf.join('')));
       });
     } catch (e) {
       return this.error('There was a problem checking the domain: %s', [e.toString()]);
@@ -52,7 +50,7 @@ export class ValidateSpfRecord extends BaseStep implements StepInterface {
       const invalidStringTxt = records.find((record: any) => record.toString().length > 255);
       // tslint:disable-next-line:max-line-length
       return this.fail('SPF record for %s includes a string over 255 characters. Consider breaking this up into multiple strings: %s', [domain, invalidStringTxt]);
-    } else if (sizeOf(records[0]) > 512) {
+    } else if (records[0].toString().length > 512) {
       // If record has more than 512 bytes, return a fail.
       // tslint:disable-next-line:max-line-length
       return this.fail("SPF records shouldn't exceed 512 bytes, but %s's record was %s bytes", [domain, sizeOf(records[0])]);
@@ -63,13 +61,13 @@ export class ValidateSpfRecord extends BaseStep implements StepInterface {
       const errors = parsedRecords[0].messages.filter((message: Message) => message.type === 'error');
       // tslint:disable-next-line:max-line-length
       return this.fail("Found syntax error(s) in %s's SPF record: %s", [domain, errors.map(e => e.message).join('\n')]);
-    } else if (parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1].prefix !== '~'
+    } else if (parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1].prefix !== '-'
       || parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1].type !== 'all') {
       // If record's last entry is not ~all, return a fail.
       // tslint:disable-next-line:max-line-length
       const lastEntry: Mechanism = parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1];
       // tslint:disable-next-line:max-line-length
-      return this.fail('The last entry in an SPF record should be ~all, but it was actually %s', [lastEntry.prefix + lastEntry.type]);
+      return this.fail('The last entry in an SPF record should be -all, but it was actually %s', [lastEntry.prefix + lastEntry.type]);
     } else {
       // If record passes all criteria, return a pass.
       return this.pass('SPF record for %s is valid: %s', [domain, records[0].join('')]);

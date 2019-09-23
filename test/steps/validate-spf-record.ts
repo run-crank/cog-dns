@@ -47,7 +47,7 @@ describe('ValidateSpfRecordStep', () => {
     const expectedResponseMessage: string = 'SPF record for %s is valid: %s';
     const expectedSpfRecord: any = [
       [
-        'v=spf1 include:_spf.google.com ~all',
+        'v=spf1 include:_spf.google.com -all',
       ],
     ];
 
@@ -205,10 +205,10 @@ describe('ValidateSpfRecordStep', () => {
   it('should respond with fail if API client returns with a single Spf record last record not being ~all', async () => {
     // Stub a response that matches expectations.
     const domainInput: string = 'sampleDomain.com';
-    const expectedResponseMessage: string = 'The last entry in an SPF record should be ~all, but it was actually %s';
+    const expectedResponseMessage: string = 'The last entry in an SPF record should be -all, but it was actually %s';
     const expectedSpfRecord: any = [
       [
-        'v=spf1 a mx include:_spf.elasticemail.com -all',
+        'v=spf1 a mx include:_spf.elasticemail.com ~all',
       ],
     ];
 
