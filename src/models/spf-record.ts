@@ -1,4 +1,4 @@
-import { Mechanism } from './Mechanism';
+import { Mechanism } from './mechanism';
 import { Message } from './message';
 
 export class SpfRecord {
