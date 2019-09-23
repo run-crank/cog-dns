@@ -1,6 +1,5 @@
 import { SpfRecord } from './../models/spf-record';
 import * as grpc from 'grpc';
-import * as needle from 'needle';
 import { Field } from '../core/base-step';
 import { FieldDefinition } from '../proto/cog_pb';
 import { resolve } from 'path';

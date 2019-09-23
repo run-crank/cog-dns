@@ -1,8 +1,10 @@
 # DNS Cog
 
-This is a [Crank][what-is-crank] Cog for DNS, providing
-steps and assertions for you to validate the state and behavior of your
-DNS instance.
+[![CircleCI](https://circleci.com/gh/run-crank/cog-dns/tree/master.svg?style=svg)](https://circleci.com/gh/run-crank/cog-dns/tree/master)
+
+This is a [Crank][what-is-crank] Cog for validating DNS configurations,
+providing steps and assertions for you to validate the state of your domain's
+DNS records.
 
 * [Installation](#installation)
 * [Usage](#usage)
@@ -11,28 +13,18 @@ DNS instance.
 ## Installation
 
 Ensure you have the `crank` CLI and `docker` installed and running locally,
-then run the following.  You'll be prompted to enter your DNS
-credentials once the Cog is successfully installed.
+then run the following.
 
 ```shell-session
 $ crank cog:install automatoninc/dns
 ```
-
-Note: You can always re-authenticate later.
 
 ## Usage
 
 ### Authentication
 <!-- run `crank cog:readme automatoninc/dns` to update -->
 <!-- authenticationDetails -->
-You will be asked for the following authentication details on installation.
-
-- **userAgent**: User Agent String
-
-```shell-session
-# Re-authenticate by running this
-$ crank cog:auth automatoninc/dns
-```
+This Cog does not require any authentication details.
 <!-- authenticationDetailsEnd -->
 
 ### Steps
@@ -41,7 +33,20 @@ Scenario files.
 
 <!-- run `crank cog:readme automatoninc/dns` to update -->
 <!-- stepDetails -->
-This Cog does not have any steps defined yet!
+<h4 id="ValidateSpfRecordHost">Check that a domain's SPF record includes a specific host</h4>
+
+- **Expression**: `the spf record for (?<domain>.+) should include (?<host>.+)`
+- **Expected Data**:
+  - `domain`: Domain name
+  - `host`: Host name
+- **Step ID**: `ValidateSpfRecordHost`
+
+<h4 id="ValidateSpfRecord">Check the validity of a domain's SPF record</h4>
+
+- **Expression**: `the spf record for (?<domain>.+) should be valid`
+- **Expected Data**:
+  - `domain`: Domain name
+- **Step ID**: `ValidateSpfRecord`
 <!-- stepDetailsEnd -->
 
 ## Development and Contributing
