@@ -32,21 +32,6 @@ describe('Cog:GetManifest', () => {
     });
   });
 
-  it('should return expected cog auth fields', (done) => {
-    cogUnderTest.getManifest(null, (err, manifest: CogManifest) => {
-      const authFields: any[] = manifest.getAuthFieldsList().map((field: FieldDefinition) => {
-        return field.toObject();
-      });
-
-      // Useragent auth field
-      const ua: any = authFields.filter(a => a.key === 'userAgent')[0];
-      expect(ua.type).to.equal(FieldDefinition.Type.STRING);
-      expect(ua.optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
-
-      done();
-    });
-  });
-
   it('should return expected step definitions', (done) => {
     cogUnderTest.getManifest(null, (err, manifest: CogManifest) => {
       const stepDefs: StepDefinition[] = manifest.getStepDefinitionsList();
