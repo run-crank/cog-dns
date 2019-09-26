@@ -33,6 +33,9 @@ export class ValidateSpfRecord extends BaseStep implements StepInterface {
       return this.error('There was a problem checking the domain: %s', [e.toString()]);
     }
 
+    const lastEntry:any = parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1];
+    const prefixes: string[] = ['~all', '-all'];
+
     if (records.length !== 1) {
       // If record has more than 1 record, return a fail.
       // tslint:disable-next-line:max-line-length
@@ -60,13 +63,10 @@ export class ValidateSpfRecord extends BaseStep implements StepInterface {
       const errors = parsedRecords[0].messages.filter((message: Message) => message.type === 'error');
       // tslint:disable-next-line:max-line-length
       return this.fail("Found syntax error(s) in %s's SPF record: %s", [domain, errors.map(e => e.message).join('\n')]);
-    } else if (parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1].prefix !== '-'
-      || parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1].type !== 'all') {
+    } else if (!prefixes.includes(lastEntry.prefix + lastEntry.type)) {
       // If record's last entry is not ~all, return a fail.
       // tslint:disable-next-line:max-line-length
-      const lastEntry: Mechanism = parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1];
-      // tslint:disable-next-line:max-line-length
-      return this.fail('The last entry in an SPF record should be -all, but it was actually %s', [lastEntry.prefix + lastEntry.type]);
+      return this.fail('The last entry in an SPF record should be -all or ~all, but it was actually %s', [lastEntry.prefix + lastEntry.type]);
     } else {
       // If record passes all criteria, return a pass.
       return this.pass('SPF record for %s is valid: %s', [domain, records[0].join('')]);
