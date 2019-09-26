@@ -61,8 +61,9 @@ export class ValidateSpfRecord extends BaseStep implements StepInterface {
       const errors = parsedRecords[0].messages.filter((message: Message) => message.type === 'error');
       // tslint:disable-next-line:max-line-length
       return this.fail("Found syntax error(s) in %s's SPF record: %s", [domain, errors.map(e => e.message).join('\n')]);
-    } else if (parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1].prefix !== '-'
-      || parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1].type !== 'all') {
+    } else if (parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1].type !== 'all'
+      || parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1].prefix !== '~'
+      || parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1].prefix !== '-') {
       // If record's last entry is not ~all, return a fail.
       // tslint:disable-next-line:max-line-length
       const lastEntry: Mechanism = parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1];
