@@ -47,7 +47,7 @@ describe('ValidateSpfRecordStep', () => {
     const expectedResponseMessage: string = 'SPF record for %s is valid: %s';
     const expectedSpfRecord: any = [
       [
-        'v=spf1 include:_spf.google.com -all',
+        'v=spf1 include:_spf.google.com ~all',
       ],
     ];
 
@@ -202,13 +202,13 @@ describe('ValidateSpfRecordStep', () => {
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
   });
 
-  it('should respond with fail if API client returns with a single Spf record last record not being ~all', async () => {
+  it('should respond with fail if API client returns with a single Spf record last record not being ~all or -all', async () => {
     // Stub a response that matches expectations.
     const domainInput: string = 'sampleDomain.com';
-    const expectedResponseMessage: string = 'The last entry in an SPF record should be -all, but it was actually %s';
+    const expectedResponseMessage: string = 'The last entry in an SPF record should be -all or ~all, but it was actually %s';
     const expectedSpfRecord: any = [
       [
-        'v=spf1 a mx include:_spf.elasticemail.com ~all',
+        'v=spf1 a mx include:_spf.elasticemail.com +all',
       ],
     ];
 
@@ -225,6 +225,58 @@ describe('ValidateSpfRecordStep', () => {
     expect(response.getMessageFormat()).to.equal(expectedResponseMessage);
     // expect(response.getMessageArgsList()).to.equal([]);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
+  });
+
+  // tslint:disable-next-line:max-line-length
+  it('should respond with pass if API client returns with a single Spf record last record is -all', async () => {
+    // Stub a response that matches expectations.
+    const domainInput: string = 'sampleDomain.com';
+    const expectedResponseMessage: string = 'SPF record for %s is valid: %s';
+    const expectedSpfRecord: any = [
+      [
+        'v=spf1 a mx include:_spf.elasticemail.com -all',
+      ],
+    ];
+
+    clientWrapperStub.findSpfRecordByDomain.resolves(expectedSpfRecord);
+
+    // Set step data corresponding to expectations
+    const expectations: any = {
+      domain: domainInput,
+    };
+    protoStep.setData(Struct.fromJavaScript(expectations));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(clientWrapperStub.findSpfRecordByDomain).to.have.been.calledWith(domainInput);
+    expect(response.getMessageFormat()).to.equal(expectedResponseMessage);
+    // expect(response.getMessageArgsList()).to.equal([]);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
+  });
+
+  // tslint:disable-next-line:max-line-length
+  it('should respond with pass if API client returns with a single Spf record last record is ~all', async () => {
+    // Stub a response that matches expectations.
+    const domainInput: string = 'sampleDomain.com';
+    const expectedResponseMessage: string = 'SPF record for %s is valid: %s';
+    const expectedSpfRecord: any = [
+      [
+        'v=spf1 a mx include:_spf.elasticemail.com -all',
+      ],
+    ];
+
+    clientWrapperStub.findSpfRecordByDomain.resolves(expectedSpfRecord);
+
+    // Set step data corresponding to expectations
+    const expectations: any = {
+      domain: domainInput,
+    };
+    protoStep.setData(Struct.fromJavaScript(expectations));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(clientWrapperStub.findSpfRecordByDomain).to.have.been.calledWith(domainInput);
+    expect(response.getMessageFormat()).to.equal(expectedResponseMessage);
+    // expect(response.getMessageArgsList()).to.equal([]);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
   });
 
   it('should respond with error if API client throws an exception', async () => {
