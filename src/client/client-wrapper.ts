@@ -26,8 +26,6 @@ export class ClientWrapper {
    * to swap this out for an API client specific to your Cog's needs.
    */
   private client: any;
-  private clientReady: Promise<boolean>;
-  private spfParse: any;
 
   // /**
   //  * Constructs an instance of the ClientWwrapper, authenticating the wrapped
@@ -41,27 +39,12 @@ export class ClientWrapper {
   //  *   simplify automated testing. Should default to the class/constructor of
   //  *   the underlying/wrapped API client.
   //  */
-  // constructor (auth: grpc.Metadata, clientConstructor = needle) {
-  //   // Call auth.get() for any field defined in the static expectedAuthFields
-  //   // array here. The argument passed to get() should match the "field" prop
-  //   // declared on the definition object above.
-  //   const uaString: string = auth.get('userAgent').toString();
-  //   this.client = clientConstructor;
 
-  //   // Authenticate the underlying client here.
-  //   this.client.defaults({ user_agent: uaString });
-  // }
-
-  constructor (dnsClient:any = null, spfParse: any = null) {
-    this.client = require('dns');
-    if (dnsClient != null && spfParse != null) {
-      this.client = dnsClient;
-      this.spfParse = spfParse;
-    }
+  constructor (client = require('dns')) {
+    this.client = client;
   }
 
   public async findSpfRecordByDomain(domain: string): Promise<any[]> {
-    await this.clientReady;
     return new Promise((resolve, reject) => {
       try {
         this.client.resolveTxt(domain, (err, results) => {
