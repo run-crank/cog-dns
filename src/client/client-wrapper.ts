@@ -40,8 +40,8 @@ export class ClientWrapper {
   //  *   the underlying/wrapped API client.
   //  */
 
-  constructor (client = require('dns')) {
-    this.client = client;
+  constructor (client = null) {
+    this.client = client || require('dns');
   }
 
   public async findSpfRecordByDomain(domain: string): Promise<any[]> {

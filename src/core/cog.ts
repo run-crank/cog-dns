@@ -154,7 +154,7 @@ export class Cog implements ICogServiceServer {
    * Helper method to instantiate an API client wrapper for this Cog.
    */
   private instantiateClient(auth: grpc.Metadata): ClientWrapper {
-    return new this.clientWrapperClass(auth);
+    return new this.clientWrapperClass();
   }
 
 }
