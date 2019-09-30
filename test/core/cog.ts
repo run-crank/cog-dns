@@ -63,17 +63,6 @@ describe('Cog:RunStep', () => {
     cogUnderTest = new Cog(clientWrapperStub);
   });
 
-  it('authenticates client wrapper with call metadata', (done) => {
-    // Construct grpc metadata and assert the client was authenticated.
-    grpcUnaryCall.metadata = new Metadata();
-    grpcUnaryCall.metadata.add('anythingReally', 'some-value');
-
-    cogUnderTest.runStep(grpcUnaryCall, (err, response: RunStepResponse) => {
-      expect(clientWrapperStub).to.have.been.calledWith(grpcUnaryCall.metadata);
-      done();
-    })
-  });
-
   it('responds with error when called with unknown stepId', (done) => {
     protoStep.setStepId('NotRealStep');
 
@@ -137,21 +126,6 @@ describe('Cog:RunSteps', () => {
     clientWrapperStub = sinon.stub();
     cogUnderTest = new Cog(clientWrapperStub);
   });
-
-  it('authenticates client wrapper with call metadata', () => {
-    runStepRequest.setStep(protoStep);
-
-    // Construct grpc metadata and assert the client was authenticated.
-    grpcDuplexStream.metadata.add('anythingReally', 'some-value');
-
-    cogUnderTest.runSteps(grpcDuplexStream);
-    grpcDuplexStream.emit('data', runStepRequest);
-    expect(clientWrapperStub).to.have.been.calledWith(grpcDuplexStream.metadata);
-
-    // Does not attempt to reinstantiate client.
-    grpcDuplexStream.emit('data', runStepRequest);
-    return expect(clientWrapperStub).to.have.been.calledOnce;
-});
 
   it('responds with error when called with unknown stepId', (done) => {
     // Construct step request
