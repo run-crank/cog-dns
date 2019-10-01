@@ -51,6 +51,34 @@ describe('ClientWrapper', () => {
     .to.be.rejectedWith(anError);
   });
 
+  it('findSpfRecordByDomain:apiError:enodata', async () => {
+    const sampleDomain = 'anyDomain';
+    const anError = new Error('An API Error');
+
+    // Set up test instance.
+    anError['code'] = 'ENODATA';
+    dnsStub.resolveTxt.callsArgWith(1, anError);
+    clientWrapperUnderTest = new ClientWrapper(dnsStub);
+
+    // Call the method and make assertions.
+    const actualResult = await clientWrapperUnderTest.findSpfRecordByDomain(sampleDomain);
+    expect(actualResult).to.deep.equal([]);
+  });
+
+  it('findSpfRecordByDomain:apiError:enotfound', async () => {
+    const sampleDomain = 'anyDomain';
+    const anError = new Error('An API Error');
+
+    // Set up test instance.
+    anError['code'] = 'ENOTFOUND';
+    dnsStub.resolveTxt.callsArgWith(1, anError);
+    clientWrapperUnderTest = new ClientWrapper(dnsStub);
+
+    // Call the method and make assertions.
+    return expect(clientWrapperUnderTest.findSpfRecordByDomain(sampleDomain))
+      .to.be.rejected;
+  });
+
   it('findSpfRecordByDomain:apiThrows', async () => {
     const sampleDomain = 'anyDomain';
     const anError = new Error('An API Error');

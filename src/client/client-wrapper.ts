@@ -49,8 +49,15 @@ export class ClientWrapper {
       try {
         this.client.resolveTxt(domain, (err, results) => {
           if (err) {
-            reject(err);
-            return;
+            // Friendlier errors for known situations.
+            if (err['code'] === 'ENOTFOUND') {
+              return reject(new Error(`Domain ${domain} does not exist.`));
+            }
+            if (err['code'] === 'ENODATA') {
+              return resolve([]);
+            }
+
+            return reject(err);
           }
 
           const result: any = [];
