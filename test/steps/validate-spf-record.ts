@@ -94,7 +94,7 @@ describe('ValidateSpfRecordStep', () => {
   it('should respond with fail if API client returns with a single Spf record has more than 10 mechanisms of specific types', async () => {
     // Stub a response that matches expectations.
     const domainInput: string = 'sampleDomain.com';
-    const expectedResponseMessage: string = 'There should only be no more than 10 SPF lookups for %s, but there were actually %s';
+    const expectedResponseMessage: string = 'There should be no more than 10 SPF lookups for %s, but there were actually %s';
     const expectedSpfRecord: any = [
       [
         'v=spf1 include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
@@ -150,7 +150,7 @@ describe('ValidateSpfRecordStep', () => {
   it('should respond with fail if API client returns with a single Spf record has more than 512 bytes', async () => {
     // Stub a response that matches expectations.
     const domainInput: string = 'sampleDomain.com';
-    const expectedResponseMessage: string = "SPF records shouldn't exceed 512 bytes, but %s's record was %s bytes";
+    const expectedResponseMessage: string = "SPF records shouldn't exceed 512 bytes, but %s's record was %s bytes: %s";
     const expectedSpfRecord: any = [
       [
         'v=spf1 include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all include:_spf.google.com ~all',
