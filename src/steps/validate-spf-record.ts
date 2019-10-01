@@ -21,8 +21,10 @@ export class ValidateSpfRecord extends BaseStep implements StepInterface {
     const spfParse = require('spf-parse');
     const stepData: any = step.getData().toJavaScript();
     const domain: string = stepData.domain;
+    const prefixes: string[] = ['~all', '-all'];
     let records: any[];
     const parsedRecords: SpfRecord[] = [];
+    let lastEntry: any;
 
     try {
       records = await this.client.findSpfRecordByDomain(domain);
@@ -33,8 +35,10 @@ export class ValidateSpfRecord extends BaseStep implements StepInterface {
       return this.error('There was a problem checking the domain: %s', [e.toString()]);
     }
 
-    const lastEntry:any = parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1];
-    const prefixes: string[] = ['~all', '-all'];
+    // Wrap to prevent error outcomes with no response.
+    if (parsedRecords[0]) {
+      lastEntry = parsedRecords[0].mechanisms[parsedRecords[0].mechanisms.length - 1];
+    }
 
     if (records.length !== 1) {
       // If record has more than 1 record, return a fail.
