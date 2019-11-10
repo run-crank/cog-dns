@@ -33,20 +33,10 @@ Scenario files.
 
 <!-- run `crank cog:readme automatoninc/dns` to update -->
 <!-- stepDetails -->
-<h4 id="ValidateSpfRecordHost">Check that a domain's SPF record includes a specific host</h4>
-
-- **Expression**: `the spf record for (?<domain>.+) should include (?<host>.+)`
-- **Expected Data**:
-  - `domain`: Domain name
-  - `host`: Host name
-- **Step ID**: `ValidateSpfRecordHost`
-
-<h4 id="ValidateSpfRecord">Check the validity of a domain's SPF record</h4>
-
-- **Expression**: `the spf record for (?<domain>.+) should be valid`
-- **Expected Data**:
-  - `domain`: Domain name
-- **Step ID**: `ValidateSpfRecord`
+| Name (ID) | Expression | Expected Data |
+| --- | --- | --- |
+| **Check that a domain's SPF record includes a specific host**<br>(`ValidateSpfRecordHost`) | `the spf record for (?<domain>.+) should include (?<host>.+)` | - `domain`: Domain name <br><br>- `host`: Host name |
+| **Check the validity of a domain's SPF record**<br>(`ValidateSpfRecord`) | `the spf record for (?<domain>.+) should be valid` | - `domain`: Domain name |
 <!-- stepDetailsEnd -->
 
 ## Development and Contributing
