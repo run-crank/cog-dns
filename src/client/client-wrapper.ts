@@ -3,6 +3,7 @@ import * as grpc from 'grpc';
 import { Field } from '../core/base-step';
 import { FieldDefinition } from '../proto/cog_pb';
 import { resolve } from 'path';
+import * as dkim from 'dkim';
 
 /**
  * This is a wrapper class around the API client for your Cog. An instance of
@@ -26,6 +27,7 @@ export class ClientWrapper {
    * to swap this out for an API client specific to your Cog's needs.
    */
   private client: any;
+  private dkimClient: any;
 
   // /**
   //  * Constructs an instance of the ClientWwrapper, authenticating the wrapped
@@ -40,8 +42,38 @@ export class ClientWrapper {
   //  *   the underlying/wrapped API client.
   //  */
 
-  constructor (client = null) {
+  constructor (client = null, dkimClient = null) {
     this.client = client || require('dns');
+    this.dkimClient = dkimClient || dkim;
+  }
+
+  public async getIpAddressByDomain(domain: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.client.lookup(domain, (err, address, family) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve({
+          'address': address,
+          'family': `IPv${family}`,
+        });
+      });
+    });
+  }
+
+  public async findDkimRecord(domain: string, selector: string): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      this.dkimClient.getKey(domain, selector, (err, key) => {
+        if (err) {
+          if (err['errno'] === 'ENOTFOUND') {
+            return reject(new Error(`Dkim record for domain ${domain} with selector ${selector} does not exist.`));
+          }
+          return reject(err);
+        }
+        key.key = Buffer.from(key.key).toString('base64');
+        return resolve(key);
+      });
+    });
   }
 
   public async findSpfRecordByDomain(domain: string): Promise<any[]> {
