@@ -12,11 +12,74 @@ chai.use(require('chai-as-promised'));
 describe('ClientWrapper', () => {
   const expect = chai.expect;
   let dnsStub: any;
+  let dkimStub: any;
   let clientWrapperUnderTest: ClientWrapper;
 
   beforeEach(() => {
     dnsStub = sinon.stub();
     dnsStub.resolveTxt = sinon.stub();
+    dnsStub.lookup = sinon.stub();
+    dkimStub = sinon.stub();
+    dkimStub.getKey = sinon.stub();
+
+  });
+
+  it('getIpAddressByDomain', async () => {
+    const sampleDomain = 'anyDomain';
+    const sampleFamily = 'anyFamily';
+    const expectedIpAddressRecord: any = {
+      address: 'anyAddress',
+      family: `IPv${sampleFamily}`,
+    };
+    let actualResult;
+
+    // Set up test instance.
+    dnsStub.lookup.callsArgWith(1, null, expectedIpAddressRecord['address'], sampleFamily);
+    clientWrapperUnderTest = new ClientWrapper(dnsStub, dkimStub);
+
+    // Call the method and make assertions.
+    actualResult = await clientWrapperUnderTest.getIpAddressByDomain(sampleDomain);
+    expect(dnsStub.lookup).to.have.been.calledWith(sampleDomain);
+    expect(actualResult).to.eql(expectedIpAddressRecord);
+  });
+
+  it('findDkimRecord', async () => {
+    const sampleDomain = 'anyDomain';
+    const sampleSelector = 'anySelector';
+    const expectedDkimRecord: any = {
+      version: 'sampleVersion',
+      type: 'sampleType',
+      flags: null,
+      granularity: null,
+      hash: null,
+      notes: null,
+      service: null,
+      key: 'sampleKey',
+    };
+    let actualResult;
+
+    // Set up test instance.
+    dkimStub.getKey.callsArgWith(2, null, expectedDkimRecord);
+    clientWrapperUnderTest = new ClientWrapper(dnsStub, dkimStub);
+
+    // Call the method and make assertions.
+    actualResult = await clientWrapperUnderTest.findDkimRecord(sampleDomain, sampleSelector);
+    expect(dkimStub.getKey).to.have.been.calledWith(sampleDomain, sampleSelector);
+    expect(actualResult).to.equal(expectedDkimRecord);
+  });
+
+  it('findDkimRecord:apiError', async () => {
+    const sampleDomain = 'anyDomain';
+    const sampleSelector = 'anySelector';
+    const anError = new Error('An API Error');
+
+    // Set up test instance.
+    dkimStub.getKey.callsArgWith(1, anError);
+    clientWrapperUnderTest = new ClientWrapper(dnsStub);
+
+    // Call the method and make assertions.
+    expect(clientWrapperUnderTest.findDkimRecord(sampleDomain, sampleSelector))
+    .to.be.rejectedWith(anError);
   });
 
   it('findSpfRecordByDomain', async () => {
