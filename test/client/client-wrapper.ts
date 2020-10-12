@@ -74,6 +74,21 @@ describe('ClientWrapper', () => {
     const anError = new Error('An API Error');
 
     // Set up test instance.
+    anError['code'] = 'ENODATA';
+    dkimStub.getKey.callsArgWith(1, anError);
+    clientWrapperUnderTest = new ClientWrapper(dnsStub);
+
+    // Call the method and make assertions.
+    expect(clientWrapperUnderTest.findDkimRecord(sampleDomain, sampleSelector))
+    .to.be.rejectedWith(anError);
+  });
+
+  it('findDkimRecord:apiError:enodata', async () => {
+    const sampleDomain = 'anyDomain';
+    const sampleSelector = 'anySelector';
+    const anError = new Error('An API Error');
+
+    // Set up test instance.
     dkimStub.getKey.callsArgWith(1, anError);
     clientWrapperUnderTest = new ClientWrapper(dnsStub);
 
