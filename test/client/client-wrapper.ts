@@ -1,3 +1,4 @@
+import { blacklists } from './../../src/models/constants/blacklists.contant';
 import * as chai from 'chai';
 import { default as sinon } from 'ts-sinon';
 import * as sinonChai from 'sinon-chai';
@@ -13,6 +14,7 @@ describe('ClientWrapper', () => {
   const expect = chai.expect;
   let dnsStub: any;
   let dkimStub: any;
+  let dnsblStub: any;
   let clientWrapperUnderTest: ClientWrapper;
 
   beforeEach(() => {
@@ -21,7 +23,50 @@ describe('ClientWrapper', () => {
     dnsStub.lookup = sinon.stub();
     dkimStub = sinon.stub();
     dkimStub.getKey = sinon.stub();
+    dnsblStub = sinon.stub();
+    dnsblStub.batch = sinon.stub();
 
+  });
+
+  it('getDomainBlacklistStatus', async () => {
+    const sampleDomain = 'anyDomain';
+    const sampleFamily = 'anyFamily';
+    const expectedBlacklistRecord: any = {
+      bl1: false,
+      bl2: false,
+      bl3: false,
+    };
+    let actualResult;
+
+    // Set up test instance.
+    dnsStub.lookup.callsArgWith(1, null, 'anyAddress', sampleFamily);
+    dnsblStub.batch.returns([
+      { blacklist: 'bl1', listed: false },
+      { blacklist: 'bl2', listed: false },
+      { blacklist: 'bl3', listed: false },
+    ]);
+    clientWrapperUnderTest = new ClientWrapper(dnsStub, dkimStub, dnsblStub);
+
+    // Call the method and make assertions.
+    actualResult = await clientWrapperUnderTest.getDomainBlacklistStatus(sampleDomain);
+    expect(dnsStub.lookup).to.have.been.calledWith(sampleDomain);
+    expect(dnsblStub.batch).to.have.been.calledWith(['anyAddress'], blacklists);
+    expect(actualResult).to.eql(expectedBlacklistRecord);
+  });
+
+  it('getDomainBlacklistStatus:apiError', async () => {
+    const sampleDomain = 'anyDomain';
+    const sampleFamily = 'anyFamily';
+    const anError = new Error('An API Error');
+
+    // Set up test instance.
+    dnsStub.lookup.callsArgWith(1, null, 'anyAddress', sampleFamily);
+    dnsblStub.batch.rejects(new Error('Error'));
+    clientWrapperUnderTest = new ClientWrapper(dnsStub, dkimStub, dnsblStub);
+
+    // Call the method and make assertions.
+    expect(clientWrapperUnderTest.getDomainBlacklistStatus(sampleDomain))
+    .to.be.rejectedWith(anError);
   });
 
   it('getIpAddressByDomain', async () => {
