@@ -1,10 +1,4 @@
-import { SpfRecord } from './../models/spf-record';
-import * as grpc from 'grpc';
 import { Field } from '../core/base-step';
-import { FieldDefinition } from '../proto/cog_pb';
-import { resolve } from 'path';
-import * as dkim from 'dkim';
-import * as dnsbl from 'dnsbl';
 import { blacklists } from '../models/constants/blacklists.contant';
 
 /**
@@ -47,8 +41,8 @@ export class ClientWrapper {
 
   constructor (client = null, dkimClient = null, dnsblClient = null) {
     this.client = client || require('dns');
-    this.dkimClient = dkimClient || dkim;
-    this.dnsblClient = dnsblClient || dnsbl;
+    this.dkimClient = dkimClient || require('dkim');
+    this.dnsblClient = dnsblClient || require('dnsbl');
   }
 
   public async getDomainBlacklistStatus(domain: string): Promise<any> {
