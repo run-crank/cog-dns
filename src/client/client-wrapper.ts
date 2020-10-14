@@ -4,6 +4,8 @@ import { Field } from '../core/base-step';
 import { FieldDefinition } from '../proto/cog_pb';
 import { resolve } from 'path';
 import * as dkim from 'dkim';
+import * as dnsbl from 'dnsbl';
+import { blacklists } from '../models/constants/blacklists.contant';
 
 /**
  * This is a wrapper class around the API client for your Cog. An instance of
@@ -28,6 +30,7 @@ export class ClientWrapper {
    */
   private client: any;
   private dkimClient: any;
+  private dnsblClient: any;
 
   // /**
   //  * Constructs an instance of the ClientWwrapper, authenticating the wrapped
@@ -42,9 +45,32 @@ export class ClientWrapper {
   //  *   the underlying/wrapped API client.
   //  */
 
-  constructor (client = null, dkimClient = null) {
+  constructor (client = null, dkimClient = null, dnsblClient = null) {
     this.client = client || require('dns');
     this.dkimClient = dkimClient || dkim;
+    this.dnsblClient = dnsblClient || dnsbl;
+  }
+
+  public async getDomainBlacklistStatus(domain: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      //// Get the Ip address of the domain
+      this.client.lookup(domain, async (err, address, family) => {
+        if (err) {
+          return reject(err);
+        }
+        const result = {};
+        try {
+          //// Use the Ip address to check if its blacklisted
+          const blresult = await this.dnsblClient.batch([address], blacklists);
+          blresult.forEach((bl) => {
+            result[bl.blacklist] = bl.listed;
+          });
+          return resolve(result);
+        } catch (e) {
+          return reject(e);
+        }
+      });
+    });
   }
 
   public async getIpAddressByDomain(domain: string): Promise<any> {
