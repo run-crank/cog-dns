@@ -25,7 +25,7 @@ describe('ValidateDKIMRecordStep', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('ValidateDkimRecord');
     expect(stepDef.getName()).to.equal("Check the validity of a domain's and selector's DKIM");
-    expect(stepDef.getExpression()).to.equal('the spf record for (?<domain>.+) with (?<domain>.+) as selector should be valid');
+    expect(stepDef.getExpression()).to.equal('the spf record for (?<domain>.+) with (?<selector>.+) as selector should be valid');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.VALIDATION);
   });
 
