@@ -21,11 +21,57 @@ describe('ClientWrapper', () => {
     dnsStub = sinon.stub();
     dnsStub.resolveTxt = sinon.stub();
     dnsStub.lookup = sinon.stub();
+    dnsStub.resolveCname = sinon.stub();
     dkimStub = sinon.stub();
     dkimStub.getKey = sinon.stub();
     dnsblStub = sinon.stub();
     dnsblStub.batch = sinon.stub();
 
+  });
+
+  it('getCNameStatus', async () => {
+    const sampleDomain = 'anyDomain';
+    const sampleCName = 'anyCName';
+    const expectedCNameRecord: any = {
+      [sampleDomain]: sampleCName,
+    };
+    let actualResult;
+
+    // Set up test instance.
+    dnsStub.resolveCname.callsArgWith(1, null, [sampleCName]);
+    clientWrapperUnderTest = new ClientWrapper(dnsStub, dkimStub);
+
+    // Call the method and make assertions.
+    actualResult = await clientWrapperUnderTest.getCNameStatus(sampleDomain);
+    expect(dnsStub.resolveCname).to.have.been.calledWith(sampleDomain);
+    expect(actualResult).to.eql(expectedCNameRecord);
+  });
+
+  it('getCNameStatus:apiError', async () => {
+    const sampleDomain = 'anyDomain';
+    const anError = new Error('An API Error');
+
+    // Set up test instance.
+    dnsStub.resolveCname.callsArgWith(1, anError, null);
+    clientWrapperUnderTest = new ClientWrapper(dnsStub);
+
+    // Call the method and make assertions.
+    expect(clientWrapperUnderTest.getCNameStatus(sampleDomain))
+    .to.be.rejectedWith(anError);
+  });
+
+  it('getCNameStatus:apiError:enodata', async () => {
+    const sampleDomain = 'anyDomain';
+    const anError = new Error('An API Error');
+
+    // Set up test instance.
+    anError['code'] = 'ENODATA';
+    dnsStub.resolveCname.callsArgWith(1, anError, null);
+    clientWrapperUnderTest = new ClientWrapper(dnsStub);
+
+    // Call the method and make assertions.
+    expect(clientWrapperUnderTest.getCNameStatus(sampleDomain))
+    .to.be.rejectedWith(anError);
   });
 
   it('getDomainBlacklistStatus', async () => {
@@ -113,7 +159,7 @@ describe('ClientWrapper', () => {
     expect(actualResult).to.equal(expectedDkimRecord);
   });
 
-  it('findDkimRecord:apiError', async () => {
+  it('findDkimRecord:apiError:enodata', async () => {
     const sampleDomain = 'anyDomain';
     const sampleSelector = 'anySelector';
     const anError = new Error('An API Error');
@@ -128,7 +174,7 @@ describe('ClientWrapper', () => {
     .to.be.rejectedWith(anError);
   });
 
-  it('findDkimRecord:apiError:enodata', async () => {
+  it('findDkimRecord:apiError', async () => {
     const sampleDomain = 'anyDomain';
     const sampleSelector = 'anySelector';
     const anError = new Error('An API Error');

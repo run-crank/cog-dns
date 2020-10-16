@@ -13,17 +13,17 @@ export class CheckDomainBlacklistStatus extends BaseStep implements StepInterfac
   }];
 
   protected expectedRecords: ExpectedRecord[] = [{
-    id: 'ip',
+    id: 'blacklist',
     type: RecordDefinition.Type.KEYVALUE,
     fields: [{
-      field: 'address',
+      field: 'blacklist',
       type: FieldDefinition.Type.STRING,
-      description: 'Domain IP address',
+      description: 'Blacklist Name',
     },
     {
-      field: 'family',
-      type: FieldDefinition.Type.STRING,
-      description: 'Domain IP family',
+      field: 'listed',
+      type: FieldDefinition.Type.BOOLEAN,
+      description: 'Is the domain listed in the blacklist',
     }],
     dynamicFields: true,
   }];
