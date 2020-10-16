@@ -45,6 +45,25 @@ export class ClientWrapper {
     this.dnsblClient = dnsblClient || require('dnsbl');
   }
 
+  public async getCNameStatus(domain: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      //// Get the Ip address of the domain
+      this.client.resolveCname(domain, async (err, addresses) => {
+        if (err) {
+          if (err['errno'] === 'ENOTFOUND') {
+            return reject(new Error(`CName record for domain ${domain} does not exist.`));
+          }
+          return reject(err);
+        }
+        const result = {};
+        addresses.forEach((canonicalName) => {
+          result[domain] = canonicalName;
+        });
+        resolve(result);
+      });
+    });
+  }
+
   public async getDomainBlacklistStatus(domain: string): Promise<any> {
     return new Promise((resolve, reject) => {
       //// Get the Ip address of the domain
