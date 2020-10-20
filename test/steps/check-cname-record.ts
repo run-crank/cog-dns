@@ -67,7 +67,7 @@ describe('CheckCNameRecord', () => {
   it('should respond with fail if API client throws an error', async () => {
     // Stub a response that matches expectations.
     const domainInput: string = 'sampleDomain.com';
-    const expectedResponseMessage: string = "There was a roblem checking the domain's cname record: %s";
+    const expectedResponseMessage: string = "There was a problem checking the domain's cname record: %s";
     const expectedError: Error = new Error('Any Error');
 
     clientWrapperStub.getCNameStatus.rejects(expectedError);
