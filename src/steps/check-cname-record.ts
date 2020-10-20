@@ -35,7 +35,7 @@ export class CheckCNameRecord extends BaseStep implements StepInterface {
     try {
       const result = await this.client.getCNameStatus(domain);
       const record = this.createRecord(result);
-      return this.pass('%s has a CName record with a canonical name %s', [], [record]);
+      return this.pass('%s has a CName record with a canonical name %s', [domain, result[domain]], [record]);
     } catch (e) {
       return this.error("There was a problem checking the domain's cname record: %s", [e.toString()]);
     }
