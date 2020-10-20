@@ -34,7 +34,6 @@ export class CheckIpAddress extends BaseStep implements StepInterface {
 
     try {
       const ip = await this.client.getIpAddressByDomain(domain);
-      console.log(ip);
       const record = this.createRecord(ip);
       return this.pass('The IP address %s for %s exists, as expected', [ip.address, domain], [record]);
     } catch (e) {

@@ -46,7 +46,7 @@ describe('CheckCNameRecord', () => {
     const domainInput: string = 'sampleDomain.com';
     const expectedResponseMessage: string = '%s has a CName record with a canonical name %s';
     const expectedCNameRecord: any = {
-      domain1: 'cname1',
+      'sampleDomain.com': 'cname1',
       domain2: 'cname2',
     };
 
