@@ -39,6 +39,11 @@ describe('CheckCNameRecord', () => {
     const domain: any = fields.filter(f => f.key === 'domain')[0];
     expect(domain.optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
     expect(domain.type).to.equal(FieldDefinition.Type.STRING);
+
+    // Canonical Name field
+    const canonicalName: any = fields.filter(f => f.key === 'canonicalName')[0];
+    expect(canonicalName.optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
+    expect(canonicalName.type).to.equal(FieldDefinition.Type.STRING);
   });
 
   it('should respond with pass if API client resolves expected data', async () => {
@@ -55,6 +60,7 @@ describe('CheckCNameRecord', () => {
     // Set step data corresponding to expectations
     const expectations: any = {
       domain: domainInput,
+      canonicalName: 'cname1',
     };
     protoStep.setData(Struct.fromJavaScript(expectations));
 
@@ -62,6 +68,30 @@ describe('CheckCNameRecord', () => {
     expect(clientWrapperStub.getCNameStatus).to.have.been.calledWith(domainInput);
     expect(response.getMessageFormat()).to.equal(expectedResponseMessage);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
+  });
+
+  it('should respond with fail if API client resolves with unexpected canonicalName', async () => {
+    // Stub a response that matches expectations.
+    const domainInput: string = 'sampleDomain.com';
+    const expectedResponseMessage: string = "CName record for %s should have canonical name %s, but it doesn't. It was actually: %s";
+    const expectedCNameRecord: any = {
+      [domainInput]: 'cname1',
+      domain2: 'cname2',
+    };
+
+    clientWrapperStub.getCNameStatus.resolves(expectedCNameRecord);
+
+    // Set step data corresponding to expectations
+    const expectations: any = {
+      domain: domainInput,
+      canonicalName: 'notcname1',
+    };
+    protoStep.setData(Struct.fromJavaScript(expectations));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(clientWrapperStub.getCNameStatus).to.have.been.calledWith(domainInput);
+    expect(response.getMessageFormat()).to.equal(expectedResponseMessage);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
   });
 
   it('should respond with fail if API client throws an error', async () => {
@@ -75,6 +105,7 @@ describe('CheckCNameRecord', () => {
     // Set step data corresponding to expectations
     const expectations: any = {
       domain: domainInput,
+      canonicalName: 'cname1',
     };
     protoStep.setData(Struct.fromJavaScript(expectations));
 

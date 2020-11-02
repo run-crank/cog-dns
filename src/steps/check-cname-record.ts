@@ -10,6 +10,10 @@ export class CheckCNameRecord extends BaseStep implements StepInterface {
     field: 'domain',
     type: FieldDefinition.Type.STRING,
     description: 'Domain name',
+  }, {
+    field: 'canonicalName',
+    type: FieldDefinition.Type.STRING,
+    description: 'Canonical name',
   }];
 
   protected expectedRecords: ExpectedRecord[] = [{
@@ -31,10 +35,14 @@ export class CheckCNameRecord extends BaseStep implements StepInterface {
   async executeStep(step: Step): Promise<RunStepResponse> {
     const stepData: any = step.getData().toJavaScript();
     const domain: string = stepData.domain;
+    const canonicalName: string = stepData.canonicalName;
 
     try {
       const result = await this.client.getCNameStatus(domain);
       const record = this.createRecord(result);
+      if (result[domain] !== canonicalName) {
+        return this.fail("CName record for %s should have canonical name %s, but it doesn't. It was actually: %s", [domain, canonicalName, result[domain]], [record]);
+      }
       return this.pass('%s has a CName record with a canonical name %s', [domain, result[domain]], [record]);
     } catch (e) {
       return this.error("There was a problem checking the domain's cname record: %s", [e.toString()]);
