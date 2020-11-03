@@ -60,7 +60,7 @@ describe('CheckCNameRecord', () => {
     // Set step data corresponding to expectations
     const expectations: any = {
       domain: domainInput,
-      canonicalName: 'cname1',
+      // canonicalName: 'cname1',
     };
     protoStep.setData(Struct.fromJavaScript(expectations));
 
@@ -105,7 +105,7 @@ describe('CheckCNameRecord', () => {
     // Set step data corresponding to expectations
     const expectations: any = {
       domain: domainInput,
-      canonicalName: 'cname1',
+      // canonicalName: 'cname1',
     };
     protoStep.setData(Struct.fromJavaScript(expectations));
 
