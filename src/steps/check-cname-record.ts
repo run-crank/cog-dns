@@ -3,8 +3,8 @@ import { Step, RunStepResponse, FieldDefinition, StepDefinition, RecordDefinitio
 
 export class CheckCNameRecord extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Check the CName record of a domain';
-  protected stepExpression: string = 'The cname record of (?<domain>.+) should exist';
+  protected stepName: string = 'Check the CNAME record of a domain';
+  protected stepExpression: string = 'The CNAME record of (?<domain>.+) should exist';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
     field: 'domain',

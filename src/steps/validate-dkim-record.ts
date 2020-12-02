@@ -4,7 +4,7 @@ import { Step, RunStepResponse, FieldDefinition, StepDefinition, RecordDefinitio
 export class ValidateDkimRecord extends BaseStep implements StepInterface {
 
   protected stepName: string = "Check the validity of a domain's and selector's DKIM";
-  protected stepExpression: string = 'the dkim record for (?<domain>.+) with (?<selector>.+) as selector should be valid';
+  protected stepExpression: string = 'the DKIM record for (?<domain>.+) with (?<selector>.+) as selector should be valid';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
     field: 'domain',
