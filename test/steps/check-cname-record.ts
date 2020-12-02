@@ -24,8 +24,8 @@ describe('CheckCNameRecord', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('CheckCNameRecord');
-    expect(stepDef.getName()).to.equal('Check the CName record of a domain');
-    expect(stepDef.getExpression()).to.equal('The cname record of (?<domain>.+) should exist');
+    expect(stepDef.getName()).to.equal('Check the CNAME record of a domain');
+    expect(stepDef.getExpression()).to.equal('The CNAME record of (?<domain>.+) should exist');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.VALIDATION);
   });
 

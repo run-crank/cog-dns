@@ -25,7 +25,7 @@ describe('ValidateSpfRecordHostStep', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('ValidateSpfRecordHost');
     expect(stepDef.getName()).to.equal("Check that a domain's SPF record includes a specific host");
-    expect(stepDef.getExpression()).to.equal('the spf record for (?<domain>.+) should include (?<host>.+)');
+    expect(stepDef.getExpression()).to.equal('the SPF record for (?<domain>.+) should include (?<host>.+)');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.VALIDATION);
   });
 

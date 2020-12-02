@@ -25,7 +25,7 @@ describe('ValidateSpfRecordStep', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('ValidateSpfRecord');
     expect(stepDef.getName()).to.equal("Check the validity of a domain's SPF record");
-    expect(stepDef.getExpression()).to.equal('the spf record for (?<domain>.+) should be valid');
+    expect(stepDef.getExpression()).to.equal('the SPF record for (?<domain>.+) should be valid');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.VALIDATION);
   });
 

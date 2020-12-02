@@ -10,7 +10,7 @@ import { Step, RunStepResponse, FieldDefinition, StepDefinition } from '../proto
 export class ValidateSpfRecord extends BaseStep implements StepInterface {
 
   protected stepName: string = "Check the validity of a domain's SPF record";
-  protected stepExpression: string = 'the spf record for (?<domain>.+) should be valid';
+  protected stepExpression: string = 'the SPF record for (?<domain>.+) should be valid';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
     field: 'domain',
