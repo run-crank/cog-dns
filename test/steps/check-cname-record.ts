@@ -49,7 +49,7 @@ describe('CheckCNameRecord', () => {
   it('should respond with pass if API client resolves expected data', async () => {
     // Stub a response that matches expectations.
     const domainInput: string = 'sampleDomain.com';
-    const expectedResponseMessage: string = '%s has a CName record with a canonical name %s';
+    const expectedResponseMessage: string = '%s has a CNAME record with a canonical name %s';
     const expectedCNameRecord: any = {
       'sampleDomain.com': 'cname1',
       domain2: 'cname2',
@@ -97,7 +97,7 @@ describe('CheckCNameRecord', () => {
   it('should respond with fail if API client throws an error', async () => {
     // Stub a response that matches expectations.
     const domainInput: string = 'sampleDomain.com';
-    const expectedResponseMessage: string = "There was a problem checking the domain's cname record: %s";
+    const expectedResponseMessage: string = "There was a problem checking the domain's CNAME record: %s";
     const expectedError: Error = new Error('Any Error');
 
     clientWrapperStub.getCNameStatus.rejects(expectedError);

@@ -39,14 +39,14 @@ export class CheckCNameRecord extends BaseStep implements StepInterface {
       // if (result[domain] !== canonicalName) {
       //   return this.fail("CName record for %s should have canonical name %s, but it doesn't. It was actually: %s", [domain, canonicalName, result[domain]], [record]);
       // }
-      return this.pass('%s has a CName record with a canonical name %s', [domain, result[domain]], [record]);
+      return this.pass('%s has a CNAME record with a canonical name %s', [domain, result[domain]], [record]);
     } catch (e) {
-      return this.error("There was a problem checking the domain's cname record: %s", [e.toString()]);
+      return this.error("There was a problem checking the domain's CNAME record: %s", [e.toString()]);
     }
   }
 
   createRecord(record: Record<string, any>) {
-    return this.keyValue('cname', 'Check CName Record', record);
+    return this.keyValue('cname', 'Check CNAME Record', record);
   }
 
 }
