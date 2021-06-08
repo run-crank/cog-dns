@@ -9,7 +9,6 @@ export const blacklists: string[] = [
   'block.dnsbl.sorbs.net',
   'blocked.hilli.dk',
   'bogons.cymru.com',
-  'dnsbl.spfbl.net',
   'cbl.abuseat.org',
   'dev.null.dk',
   'dialup.blacklist.jippg.org',
