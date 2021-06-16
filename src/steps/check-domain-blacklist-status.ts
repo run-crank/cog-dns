@@ -49,7 +49,11 @@ export class CheckDomainBlacklistStatus extends BaseStep implements StepInterfac
         return this.pass('The domain %s is not blacklisted', [domain], [record]);
       }
     } catch (e) {
-      return this.error("There was a problem checking the domain's blacklist record: %s", [e.toString()]);
+      if (e.code === 'ENOTFOUND') {
+        return this.error("There the domain %s does not have a DNS record.", [domain]);
+      } else {
+        return this.error("There was a problem checking the domain's blacklist record: %s", [e.toString()]);
+      }
     }
   }
 
