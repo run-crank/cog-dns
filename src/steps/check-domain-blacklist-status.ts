@@ -50,7 +50,7 @@ export class CheckDomainBlacklistStatus extends BaseStep implements StepInterfac
       }
     } catch (e) {
       if (e.code === 'ENOTFOUND') {
-        return this.error('There the domain %s does not have a DNS record.', [domain]);
+        return this.error('The domain %s does not have a DNS record.', [domain]);
       } else {
         return this.error("There was a problem checking the domain's blacklist record: %s", [e.toString()]);
       }
