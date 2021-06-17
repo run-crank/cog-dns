@@ -64,5 +64,5 @@ export const defaultBlacklistResult: Object = {
   'xbl.spamhaus.org': false,
   'zen.spamhaus.org': false,
   'zombie.dnsbl.sorbs.net': false,
-  'bl.mailspike.net': false
-}
+  'bl.mailspike.net': false,
+};
