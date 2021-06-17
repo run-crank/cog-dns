@@ -1,4 +1,5 @@
 import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
+import { defaultBlacklistResult } from '../models/constants/default-blacklist.result';
 import { Step, RunStepResponse, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
 
 export class CheckDomainBlacklistStatus extends BaseStep implements StepInterface {
@@ -50,7 +51,8 @@ export class CheckDomainBlacklistStatus extends BaseStep implements StepInterfac
       }
     } catch (e) {
       if (e.code === 'ENOTFOUND') {
-        return this.error('The domain %s does not have a DNS record.', [domain]);
+        const record = this.createRecord(defaultBlacklistResult);
+        return this.pass('The domain %s is not blacklisted', [domain], [record]);
       } else {
         return this.error("There was a problem checking the domain's blacklist record: %s", [e.toString()]);
       }
@@ -58,7 +60,7 @@ export class CheckDomainBlacklistStatus extends BaseStep implements StepInterfac
   }
 
   createRecord(record: Record<string, any>) {
-    return this.keyValue('dkim', 'Check IP address', record);
+    return this.keyValue('blacklist', 'Check Blacklist Record', record);
   }
 
 }
